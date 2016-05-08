@@ -95,7 +95,7 @@ bool MCT::timeLimited()
 	finish=clock();
 	double duration=(double)(finish-start)/CLOCKS_PER_SEC;
 	//cout << duration << endl;
-	return duration>2.5;
+	return duration>3;
 }
 
 void MCT::uctSearch()
@@ -131,7 +131,13 @@ void MCT::uctSearch()
 		}
 	}
 	x = c->top[i];
-//	cout << x << " " << y << endl;
+	cout << x << " " << y << endl;
+
+	for (int i = 0; i<_root->childNum; i++)
+	{
+		cout << i << " " << _root->child[i]->winNum << " " << _root->child[i]->totalNum << endl;
+	}
+	cout << endl << endl;
 }
 Node* MCT::treePolicy(Node* v0,int& success)
 {
@@ -152,34 +158,47 @@ Node* MCT::treePolicy(Node* v0,int& success)
 
 Node* MCT::expand(Node* v)
 {
-	int j=rand()%(v->childNum-v->activateChild);
-	for(int i=0;i<v->childNum;i++)
-	{
-		if(!v->child[i])
-			if(j==0)
-			{
-				//i = v->activateChild;
-				//Node* c=(v->child[i]=new Node(M,N,v->top,v->board,v->iter+1));
-				Node* c = (v->child[i] = &AllNodes[nodeCount++]);
-				c->initInit(M, N, v->top, v->board, v->iter + 1);
-				c->top[v->childState[i]]--;
-				//cout << c->top[v->childState[i]] << " " << v->childState[i] << endl;
-				int xx = c->top[v->childState[i]];
-				int yy = v->childState[i];
-				c->x = xx;
-				c->y = yy;
-				v->activateChild++;
-				c->board[xx][yy]=(c->iter+1)%2+1;
-				count++;
-				c->init();
-				c->p=v;
-				return c;
-			}
-			else
-				j--;
-	}
-	
-	return v;
+	//int j=rand()%(v->childNum-v->activateChild);
+	//for(int i=0;i<v->childNum;i++)
+	//{
+	//	if(!v->child[i])
+	//		if(j==0)
+	//		{
+	//			//i = v->activateChild;
+	//			//Node* c=(v->child[i]=new Node(M,N,v->top,v->board,v->iter+1));
+	//			Node* c = (v->child[i] = &AllNodes[nodeCount++]);
+	//			c->initInit(M, N, v->top, v->board, v->iter + 1);
+	//			c->top[v->childState[i]]--;
+	//			//cout << c->top[v->childState[i]] << " " << v->childState[i] << endl;
+	//			int xx = c->top[v->childState[i]];
+	//			int yy = v->childState[i];
+	//			c->x = xx;
+	//			c->y = yy;
+	//			v->activateChild++;
+	//			c->board[xx][yy]=(c->iter+1)%2+1;
+	//			count++;
+	//			c->init();
+	//			c->p=v;
+	//			return c;
+	//		}
+	//		else
+	//			j--;
+	//}
+	int i = v->activateChild;
+	Node* c = (v->child[i] = &AllNodes[nodeCount++]);
+	c->initInit(M, N, v->top, v->board, v->iter + 1);
+	c->top[v->childState[i]]--;
+	//cout << c->top[v->childState[i]] << " " << v->childState[i] << endl;
+	int xx = c->top[v->childState[i]];
+	int yy = v->childState[i];
+	c->x = xx;
+	c->y = yy;
+	v->activateChild++;
+	c->board[xx][yy] = (c->iter + 1) % 2 + 1;
+	count++;
+	c->init();
+	c->p = v;
+	return c;
 }
 
 Node* MCT::bestChild(Node* v)
@@ -200,7 +219,7 @@ Node* MCT::bestChild(Node* v)
 
 float MCT::score(Node* v)
 {
-	return float(v->winNum)/float(v->totalNum);//+0.1*sqrt(2*log(v->p->totalNum)/float(v->totalNum));
+	return float(v->winNum)/float(v->totalNum)+0.2*sqrt(2*log(v->p->totalNum)/float(v->totalNum));
 }
 
 float MCT::defaultPolicy(Node*& v)
